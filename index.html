@@ -12,9 +12,15 @@
     <input class="search-bar" type="text">
     <button class="search-button">Cerca</button>
 
-    <div class="movie-container">
-        <!-- Popolato da Handlebars -->
-    </div>
+    <main>
+        <div class="movie-container">
+            <!-- Popolato da Handlebars -->
+        </div>
+        <div class="series-container">
+            <!-- Popolato da Handlebars -->
+        </div>
+    </main>
+   
 
     <script id="movie-template" type="text/x-handlebars-template">
         <div class="movie">
@@ -23,6 +29,7 @@
               <li>Titolo originale: {{original-title}}</li>
               <li>Lingua: {{{language}}}</li>
               <li>Voto: {{{rating}}}</li>
+              <li>Tipo: {{type}}</li>
           </ul>
       </script>
     <!-- Handlebars -->

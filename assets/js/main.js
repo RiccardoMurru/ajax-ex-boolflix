@@ -31,6 +31,7 @@ $(document).ready(function () {
     var searchInput = $('.search-bar');
     var searchBtn = $('.search-button');
     var movieList = $('.movie-container');
+    var seriesList = $('.series-container');
 
     // Handlebars init
     var source = $('#movie-template').html();
@@ -43,7 +44,8 @@ $(document).ready(function () {
     // Ricerca a click su bottone
     searchBtn.click(function() {
         var searchTitle = searchInput.val().trim();
-        movieRequest(searchTitle, template, movieList);
+        movieSerieRequest(searchTitle, template, movieList, seriesList, searchInput);
+        $(this).select();
     });
 
 
@@ -53,8 +55,8 @@ $(document).ready(function () {
 * Functions
 ************/
 
-// Ajax request
-function movieRequest(search, template, container) {
+// Ajax movie request
+function movieSerieRequest(search, template, movieContainer, seriesContainer, inputBar) {
     $.ajax({
         url: 'https://api.themoviedb.org/3/search/movie',
         method: 'GET',
@@ -67,9 +69,35 @@ function movieRequest(search, template, container) {
             var movies = response.results;
 
             if (movies.length > 0) {
-                printTemplate(movies, template, container);
+                printMovies(movies, template, movieContainer);
             } else {
-                alert('La ricerca non ha prodotto nessun risultato');
+                alert('Nessun film trovato');
+                cleanUp(movieContainer);
+            }
+            inputBar.select();
+        },
+        error: function() {
+            console.log('Request error');
+        }
+    });
+
+    // Tv series Ajax request
+    $.ajax({
+        url: 'https://api.themoviedb.org/3/search/tv',
+        method: 'GET',
+        data: {
+            api_key: '87b0eb1d0f76dae2472919c6cdf66278',
+            query: search,
+            language: 'it-IT'
+        },
+        success: function (response) {
+            var tvSeries = response.results;
+
+            if (tvSeries.length > 0) {
+                printSeries(tvSeries, template, seriesContainer);
+            } else {
+                alert('Nessuna serie trovata');
+                cleanUp(seriesContainer);
             }
         },
         error: function() {
@@ -78,8 +106,8 @@ function movieRequest(search, template, container) {
     });
 };
 
-// Handlebars print template
-function printTemplate(movies, template, container) {
+// Handlebars print movies template
+function printMovies(movies, template, container) {
     cleanUp(container);
     for (var i = 0; i < movies.length; i++) {
         var item = movies[i];
@@ -87,12 +115,30 @@ function printTemplate(movies, template, container) {
             title: item.title,
             'original-title': item.original_title,
             language: languageFlag(item.original_language),
-            rating: stars(item.vote_average)
+            rating: stars(item.vote_average),
+            type: 'Film'
+        }
+        var output = template(context);
+        container.append(output);
+    } 
+};
+
+
+// Handlebars print series template
+function printSeries(series, template, container) {
+    cleanUp(container);
+    for (var i = 0; i < series.length; i++) {
+        var item = series[i];
+        var context = {
+            title: item.name,
+            'original-title': item.original_name,
+            language: languageFlag(item.original_language),
+            rating: stars(item.vote_average),
+            type: 'Serie TV'
         }
         var output = template(context);
         container.append(output);
     }
-    
 };
 
 // pulizia dati ricerche precedenti
@@ -144,4 +190,4 @@ function languageFlag(language) {
             break;
     };
     return res;
-}
+};
