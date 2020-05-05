@@ -86,7 +86,7 @@ function printTemplate(movies, template, container) {
         var context = {
             title: item.title,
             'original-title': item.original_title,
-            language: item.original_language,
+            language: languageFlag(item.original_language),
             rating: stars(item.vote_average)
         }
         var output = template(context);
@@ -124,6 +124,23 @@ function stars(vote) {
             break;
         default:
             res = emptyStar.repeat(5);
+            break;
+    };
+    return res;
+};
+
+// cambio lingua in bandiera (it - en)
+function languageFlag(language) {
+    var res = '';
+    switch (language) {
+        case 'it':
+            res = '<img class="flag" src="assets/img/it.svg" alt="IT">';
+            break;
+        case 'en':
+            res = '<img class="flag" src="assets/img/en.svg" alt="EN">';
+            break;
+        default:
+            res = language;
             break;
     };
     return res;
