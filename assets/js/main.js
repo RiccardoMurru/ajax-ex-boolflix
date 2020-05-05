@@ -11,6 +11,17 @@
 * Utilizzare un template Handlebars per mostrare ogni singolo film trovato.
 */
 
+/**
+* Milestone 2:
+* Trasformiamo il voto da 1 a 10 decimale in un numero intero da 1 a 5, 
+* così da permetterci di stampare a schermo un numero di stelle piene 
+* che vanno da 1 a 5, lasciando le restanti vuote (troviamo le icone in FontAwesome).
+* Arrotondiamo sempre per eccesso all’unità successiva, non gestiamo icone mezze piene
+* Trasformiamo poi la stringa statica della lingua in una vera e propria bandiera della nazione corrispondente, 
+* gestendo il caso in cui non abbiamo la bandiera della nazione ritornata dall’API.
+* Allarghiamo poi la ricerca anche alle serie tv.
+*/
+
 $(document).ready(function () {
 
     /***********
@@ -19,6 +30,7 @@ $(document).ready(function () {
 
     var searchInput = $('.search-bar');
     var searchBtn = $('.search-button');
+    var movieList = $('.movie-container');
 
     // Handlebars init
     var source = $('#movie-template').html();
@@ -31,7 +43,7 @@ $(document).ready(function () {
     // Ricerca a click su bottone
     searchBtn.click(function() {
         var searchTitle = searchInput.val().trim();
-        movieRequest(searchTitle, template);
+        movieRequest(searchTitle, template, movieList);
     });
 
 
@@ -42,9 +54,9 @@ $(document).ready(function () {
 ************/
 
 // Ajax request
-function movieRequest(search, template) {
+function movieRequest(search, template, container) {
     $.ajax({
-        url: "https://api.themoviedb.org/3/search/movie",
+        url: 'https://api.themoviedb.org/3/search/movie',
         method: 'GET',
         data: {
             api_key: '87b0eb1d0f76dae2472919c6cdf66278',
@@ -52,11 +64,12 @@ function movieRequest(search, template) {
             language: 'it-IT'
         },
         success: function (response) {
-            // pulizia dati film
-            $('.movie-container').html('');
-            for (var i = 0; i < response.results.length; i++) {
-                var movie = response.results[i];
-                printTemplate(movie, template);
+            var movies = response.results;
+
+            if (movies.length > 0) {
+                printTemplate(movies, template, container);
+            } else {
+                alert('La ricerca non ha prodotto nessun risultato');
             }
         },
         error: function() {
@@ -66,14 +79,52 @@ function movieRequest(search, template) {
 };
 
 // Handlebars print template
-function printTemplate(item, template) {
-    var context = {
-        title: item.title,
-        'original-title': item.original_title,
-        language: item.original_language,
-        rating: item.vote_average
+function printTemplate(movies, template, container) {
+    cleanUp(container);
+    for (var i = 0; i < movies.length; i++) {
+        var item = movies[i];
+        var context = {
+            title: item.title,
+            'original-title': item.original_title,
+            language: item.original_language,
+            rating: stars(item.vote_average)
+        }
+        var output = template(context);
+        container.append(output);
     }
-
-    var output = template(context);
-    $('.movie-container').append(output);
+    
 };
+
+// pulizia dati ricerche precedenti
+function cleanUp(container) {
+    container.html('');
+};
+
+// trasforma la media voti in stelle da 1 a 5
+function stars(vote) {
+    var res = '';
+    var fullStar = '<i class="fas fa-star"></i>';
+    var emptyStar = '<i class="far fa-star"></i>';
+
+    switch (Math.ceil(vote / 2)) {
+        case 1:
+            res = fullStar + (emptyStar.repeat(4));
+            break;
+        case 2:
+            res = (fullStar.repeat(2)) + (emptyStar.repeat(3));
+            break;
+        case 3:
+            res = (fullStar.repeat(3)) + (emptyStar.repeat(2));
+            break;
+        case 4:
+            res = (fullStar.repeat(4)) + emptyStar;
+            break;
+        case 5:
+            res = fullStar.repeat(5);
+            break;
+        default:
+            res = emptyStar.repeat(5);
+            break;
+    };
+    return res;
+}
