@@ -16,20 +16,19 @@
         <div class="movie-container">
             <!-- Popolato da Handlebars -->
         </div>
-        <div class="series-container">
-            <!-- Popolato da Handlebars -->
-        </div>
     </main>
    
 
     <script id="movie-template" type="text/x-handlebars-template">
         <div class="movie">
+            <img src="{{poster}}" alt="Poster">
           <ul>
               <li>Titolo: {{title}}</li>
               <li>Titolo originale: {{original-title}}</li>
               <li>Lingua: {{{language}}}</li>
               <li>Voto: {{{rating}}}</li>
               <li>Tipo: {{type}}</li>
+              <li>Descrizione: {{overview}}</li>
           </ul>
       </script>
     <!-- Handlebars -->

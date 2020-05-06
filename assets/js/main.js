@@ -31,7 +31,18 @@ $(document).ready(function () {
     var searchInput = $('.search-bar');
     var searchBtn = $('.search-button');
     var movieList = $('.movie-container');
-    var seriesList = $('.series-container');
+    var moviesApi = {
+        url: 'https://api.themoviedb.org/3/search/movie',
+        api_key: '87b0eb1d0f76dae2472919c6cdf66278',
+        language: 'it-IT',
+        type: 'Film'
+    };
+    var seriesApi = {
+        url: 'https://api.themoviedb.org/3/search/tv',
+        api_key: '87b0eb1d0f76dae2472919c6cdf66278',
+        language: 'it-IT',
+        type: 'Serie TV'
+    };
 
     // Handlebars init
     var source = $('#movie-template').html();
@@ -44,8 +55,9 @@ $(document).ready(function () {
     // Ricerca a click su bottone
     searchBtn.click(function() {
         var searchTitle = searchInput.val().trim();
-        movieSerieRequest(searchTitle, template, movieList, seriesList, searchInput);
-        $(this).select();
+        cleanUp(movieList);
+        apiRequest(searchTitle, moviesApi, template, movieList, searchInput);
+        apiRequest(searchTitle, seriesApi, template, movieList, searchInput);
     });
 
 
@@ -56,23 +68,22 @@ $(document).ready(function () {
 ************/
 
 // Ajax movie request
-function movieSerieRequest(search, template, movieContainer, seriesContainer, inputBar) {
+function apiRequest(search, apiData, template, container, inputBar) {
     $.ajax({
-        url: 'https://api.themoviedb.org/3/search/movie',
+        url: apiData.url,
         method: 'GET',
         data: {
-            api_key: '87b0eb1d0f76dae2472919c6cdf66278',
+            api_key: apiData.api_key,
             query: search,
-            language: 'it-IT'
+            language: apiData.language
         },
         success: function (response) {
             var movies = response.results;
 
             if (movies.length > 0) {
-                printMovies(movies, template, movieContainer);
+                print(movies, template, container, apiData.type);
             } else {
-                alert('Nessun film trovato');
-                cleanUp(movieContainer);
+                console.log('Nessun risultato');
             }
             inputBar.select();
         },
@@ -80,65 +91,45 @@ function movieSerieRequest(search, template, movieContainer, seriesContainer, in
             console.log('Request error');
         }
     });
-
-    // Tv series Ajax request
-    $.ajax({
-        url: 'https://api.themoviedb.org/3/search/tv',
-        method: 'GET',
-        data: {
-            api_key: '87b0eb1d0f76dae2472919c6cdf66278',
-            query: search,
-            language: 'it-IT'
-        },
-        success: function (response) {
-            var tvSeries = response.results;
-
-            if (tvSeries.length > 0) {
-                printSeries(tvSeries, template, seriesContainer);
-            } else {
-                alert('Nessuna serie trovata');
-                cleanUp(seriesContainer);
-            }
-        },
-        error: function() {
-            console.log('Request error');
-        }
-    });
 };
 
-// Handlebars print movies template
-function printMovies(movies, template, container) {
-    cleanUp(container);
+// Handlebars print template
+function print(movies, template, container, type) {
+    var title, originalTitle;
+
     for (var i = 0; i < movies.length; i++) {
         var item = movies[i];
+        if (type === 'Film') {
+            title = item.title;
+            originalTitle = item.original_title;
+        } else if (type === 'Serie TV') {
+            title = item.name;
+            originalTitle = item.original_name;
+        }
+        var posterPath = {
+            baseUrl: 'https://image.tmdb.org/t/p/',
+            width: 'w342',
+            imageUrl: item.poster_path
+        };
+
+        var poster = posterPath.baseUrl + posterPath.width + posterPath.imageUrl;
+
         var context = {
-            title: item.title,
-            'original-title': item.original_title,
+            title: title,
+            'original-title': originalTitle,
             language: languageFlag(item.original_language),
             rating: stars(item.vote_average),
-            type: 'Film'
+            type: type,
+            poster: poster,
+            overview: item.overview.substr(0, 150) + '...'
+
         }
         var output = template(context);
         container.append(output);
     } 
-};
 
-
-// Handlebars print series template
-function printSeries(series, template, container) {
-    cleanUp(container);
-    for (var i = 0; i < series.length; i++) {
-        var item = series[i];
-        var context = {
-            title: item.name,
-            'original-title': item.original_name,
-            language: languageFlag(item.original_language),
-            rating: stars(item.vote_average),
-            type: 'Serie TV'
-        }
-        var output = template(context);
-        container.append(output);
-    }
+    console.log(posterPath);
+    
 };
 
 // pulizia dati ricerche precedenti
