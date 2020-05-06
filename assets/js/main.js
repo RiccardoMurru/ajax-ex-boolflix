@@ -43,6 +43,7 @@ $(document).ready(function () {
         language: 'it-IT',
         type: 'Serie TV'
     };
+    var moviePoster = $('.movie-poster');
 
     // Handlebars init
     var source = $('#movie-template').html();
@@ -64,6 +65,18 @@ $(document).ready(function () {
             var searchTitle = searchInput.val().trim();
             searchMoviesTV(movieList, searchTitle, moviesApi, seriesApi, template, searchInput);
         }
+    });
+
+    // mostra dettagli film in hover su immagine
+
+    $('body').on('mouseenter', '.movie', function() {
+        $(this).children('.movie-details').fadeIn();
+        $(this).children('.movie-poster').addClass('active');
+    });
+
+    $('body').on('mouseleave', '.movie', function() {
+        $(this).children('.movie-details').fadeOut();
+        $(this).children('.movie-poster').removeClass('active');
     });
 
 
@@ -112,13 +125,17 @@ function print(movies, template, container, type) {
             title = item.name;
             originalTitle = item.original_name;
         }
-        var posterPath = {
-            baseUrl: 'https://image.tmdb.org/t/p/',
-            width: 'w342',
-            imageUrl: item.poster_path
-        };
-
-        var poster = posterPath.baseUrl + posterPath.width + posterPath.imageUrl;
+        
+        if (item.poster_path !== null) {
+            var posterPath = {
+                baseUrl: 'https://image.tmdb.org/t/p/',
+                width: 'w342',
+                imageUrl: item.poster_path
+            }; 
+            var poster = posterPath.baseUrl + posterPath.width + posterPath.imageUrl;
+        } else {
+            poster = 'assets/img/no-poster.png';
+        }
 
         var context = {
             title: title,
@@ -127,9 +144,9 @@ function print(movies, template, container, type) {
             rating: stars(item.vote_average),
             type: type,
             poster: poster,
-            overview: item.overview.substr(0, 150) + '...'
+            overview: item.overview.substr(0, 200)
+        };
 
-        }
         var output = template(context);
         container.append(output);
     } 

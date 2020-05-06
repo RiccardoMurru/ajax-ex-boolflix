@@ -8,9 +8,13 @@
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-    
-    <input class="search-bar" type="text">
-    <button class="search-button">Cerca</button>
+    <header>
+        <h1>BOOLFLIX</h1>
+        <div class="search">
+            <input class="search-bar" type="text" placeholder="Cerca tra Film e Serie TV">
+            <button class="search-button"><i class="fas fa-search"></i></button>
+        </div>
+    </header>
 
     <main>
         <div class="movie-container">
@@ -21,15 +25,15 @@
 
     <script id="movie-template" type="text/x-handlebars-template">
         <div class="movie">
-            <img src="{{poster}}" alt="Poster">
-          <ul>
-              <li>Titolo: {{title}}</li>
-              <li>Titolo originale: {{original-title}}</li>
-              <li>Lingua: {{{language}}}</li>
-              <li>Voto: {{{rating}}}</li>
-              <li>Tipo: {{type}}</li>
-              <li>Descrizione: {{overview}}</li>
-          </ul>
+            <img class="movie-poster" src="{{poster}}" alt="Poster">
+            <ul class="movie-details">
+                <li>Titolo: {{title}}</li>
+                <li>Titolo originale: {{original-title}}</li>
+                <li>Lingua: {{{language}}}</li>
+                <li class="movie-rating">Voto: {{{rating}}}</li>
+                <li>Tipo: {{type}}</li>
+                <li class="movie-excerpt">Descrizione: {{overview}}</li>
+            </ul>
       </script>
     <!-- Handlebars -->
     <script src='https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.6/handlebars.min.js'></script>
