@@ -55,9 +55,15 @@ $(document).ready(function () {
     // Ricerca a click su bottone
     searchBtn.click(function() {
         var searchTitle = searchInput.val().trim();
-        cleanUp(movieList);
-        apiRequest(searchTitle, moviesApi, template, movieList, searchInput);
-        apiRequest(searchTitle, seriesApi, template, movieList, searchInput);
+        searchMoviesTV(movieList, searchTitle, moviesApi, seriesApi, template, searchInput);
+    });
+
+    // ricerca enter
+    searchInput.keyup(function(e) {
+        if (e.which === 13) {
+            var searchTitle = searchInput.val().trim();
+            searchMoviesTV(movieList, searchTitle, moviesApi, seriesApi, template, searchInput);
+        }
     });
 
 
@@ -127,9 +133,6 @@ function print(movies, template, container, type) {
         var output = template(context);
         container.append(output);
     } 
-
-    console.log(posterPath);
-    
 };
 
 // pulizia dati ricerche precedenti
@@ -182,3 +185,10 @@ function languageFlag(language) {
     };
     return res;
 };
+
+function searchMoviesTV(container, searchWord, apiDataMovies, apiDataTv, template, inputBar) {
+    var searchWord = inputBar.val().trim();
+    cleanUp(container);
+    apiRequest(searchWord, apiDataMovies, template, container, inputBar);
+    apiRequest(searchWord, apiDataTv, template, container, inputBar);
+}
