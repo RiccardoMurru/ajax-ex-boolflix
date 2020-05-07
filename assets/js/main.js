@@ -1,100 +1,93 @@
-/** 
-* Milestone 1:
-* Creare un layout base con una searchbar (una input e un button) 
-* in cui possiamo scrivere completamente o parzialmente il nome di un film. 
-* Possiamo, cliccando il  bottone, cercare sull’API tutti i film che contengono ciò che ha scritto l’utente.
-* Vogliamo dopo la risposta dell’API visualizzare a schermo i seguenti valori per ogni film trovato: 
-*  - Titolo
-*  - Titolo Originale
-*  - Lingua Originale
-*  - Voto (media)
-* Utilizzare un template Handlebars per mostrare ogni singolo film trovato.
-*/
+/**
+ * Milestone 1:
+ * Creare un layout base con una searchbar (una input e un button)
+ * in cui possiamo scrivere completamente o parzialmente il nome di un film.
+ * Possiamo, cliccando il  bottone, cercare sull’API tutti i film che contengono ciò che ha scritto l’utente.
+ * Vogliamo dopo la risposta dell’API visualizzare a schermo i seguenti valori per ogni film trovato:
+ *  - Titolo
+ *  - Titolo Originale
+ *  - Lingua Originale
+ *  - Voto (media)
+ * Utilizzare un template Handlebars per mostrare ogni singolo film trovato.
+ */
 
 /**
-* Milestone 2:
-* Trasformiamo il voto da 1 a 10 decimale in un numero intero da 1 a 5, 
-* così da permetterci di stampare a schermo un numero di stelle piene 
-* che vanno da 1 a 5, lasciando le restanti vuote (troviamo le icone in FontAwesome).
-* Arrotondiamo sempre per eccesso all’unità successiva, non gestiamo icone mezze piene
-* Trasformiamo poi la stringa statica della lingua in una vera e propria bandiera della nazione corrispondente, 
-* gestendo il caso in cui non abbiamo la bandiera della nazione ritornata dall’API.
-* Allarghiamo poi la ricerca anche alle serie tv.
-*/
+ * Milestone 2:
+ * Trasformiamo il voto da 1 a 10 decimale in un numero intero da 1 a 5,
+ * così da permetterci di stampare a schermo un numero di stelle piene
+ * che vanno da 1 a 5, lasciando le restanti vuote (troviamo le icone in FontAwesome).
+ * Arrotondiamo sempre per eccesso all’unità successiva, non gestiamo icone mezze piene
+ * Trasformiamo poi la stringa statica della lingua in una vera e propria bandiera della nazione corrispondente,
+ * gestendo il caso in cui non abbiamo la bandiera della nazione ritornata dall’API.
+ * Allarghiamo poi la ricerca anche alle serie tv.
+ */
 
 $(document).ready(function () {
-
     /***********
-    * Referenze
-    ************/
+     * Referenze
+     ************/
 
-    var searchInput = $('.search-bar');
-    var searchBtn = $('.search-button');
-    var movieList = $('.movie-container');
-    var moviesApi = {
-        url: 'https://api.themoviedb.org/3/search/movie',
-        api_key: '87b0eb1d0f76dae2472919c6cdf66278',
-        language: 'it-IT',
-        type: 'Film'
-    };
-    var seriesApi = {
-        url: 'https://api.themoviedb.org/3/search/tv',
-        api_key: '87b0eb1d0f76dae2472919c6cdf66278',
-        language: 'it-IT',
-        type: 'Serie TV'
-    };
-    var moviePoster = $('.movie-poster');
+    var searchInput = $(".search-bar");
+    var searchBtn = $(".search-button");
+    var movieList = $(".movie-container");
 
     // Handlebars init
-    var source = $('#movie-template').html();
+    var source = $("#movie-template").html();
     var template = Handlebars.compile(source);
 
     /********************
-    * Main functionality
-    *********************/
+     * Main functionality
+     *********************/
 
     // Ricerca a click su bottone
-    searchBtn.click(function() {
-        var searchTitle = searchInput.val().trim();
-        searchMoviesTV(movieList, searchTitle, moviesApi, seriesApi, template, searchInput);
+    searchBtn.click(function () {
+        searchMoviesTV(searchInput, movieList, searchInput, template);
     });
 
     // ricerca enter
-    searchInput.keyup(function(e) {
+    searchInput.keyup(function (e) {
         if (e.which === 13) {
-            var searchTitle = searchInput.val().trim();
-            searchMoviesTV(movieList, searchTitle, moviesApi, seriesApi, template, searchInput);
+            searchMoviesTV(searchInput, movieList, template);
         }
     });
-
-    // mostra dettagli film in hover su immagine
-
-    $('body').on('mouseenter', '.movie', function() {
-        $(this).children('.movie-details').fadeIn();
-        $(this).children('.movie-poster').addClass('active');
-    });
-
-    $('body').on('mouseleave', '.movie', function() {
-        $(this).children('.movie-details').fadeOut();
-        $(this).children('.movie-poster').removeClass('active');
-    });
-
-
 }); // end doc ready
 
 /***********
-* Functions
-************/
+ * Functions
+ ************/
+
+// funzione ricerca 
+function searchMoviesTV(searchInput, container, template) {
+    var searchWord = searchInput.val().trim();
+    var moviesApi = {
+        url: "https://api.themoviedb.org/3/search/movie",
+        api_key: "87b0eb1d0f76dae2472919c6cdf66278",
+        query: searchWord,
+        language: "it-IT",
+        type: "Film"
+    };
+    var seriesApi = {
+        url: "https://api.themoviedb.org/3/search/tv",
+        api_key: "87b0eb1d0f76dae2472919c6cdf66278",
+        language: "it-IT",
+        query: searchWord,
+        type: "Serie TV"
+    };
+    cleanUp(container);
+    apiRequest(moviesApi, template, container);
+    apiRequest(seriesApi, template, container);
+    searchInput.select()
+}
 
 // Ajax movie request
-function apiRequest(search, apiData, template, container, inputBar) {
+function apiRequest(apiData, template, container) {
     $.ajax({
         url: apiData.url,
-        method: 'GET',
+        method: "GET",
         data: {
             api_key: apiData.api_key,
-            query: search,
-            language: apiData.language
+            query: apiData.query,
+            language: apiData.language,
         },
         success: function (response) {
             var movies = response.results;
@@ -102,15 +95,14 @@ function apiRequest(search, apiData, template, container, inputBar) {
             if (movies.length > 0) {
                 print(movies, template, container, apiData.type);
             } else {
-                console.log('Nessun risultato');
+                console.log("Nessun risultato");
             }
-            inputBar.select();
         },
-        error: function() {
-            console.log('Request error');
-        }
+        error: function () {
+            console.log("Request error");
+        },
     });
-};
+}
 
 // Handlebars print template
 function print(movies, template, container, type) {
@@ -118,63 +110,63 @@ function print(movies, template, container, type) {
 
     for (var i = 0; i < movies.length; i++) {
         var item = movies[i];
-        if (type === 'Film') {
+        if (type === "Film") {
             title = item.title;
             originalTitle = item.original_title;
-        } else if (type === 'Serie TV') {
+        } else if (type === "Serie TV") {
             title = item.name;
             originalTitle = item.original_name;
         }
-        
-        if (item.poster_path !== null) {
+
+        if (item.poster_path) {
             var posterPath = {
-                baseUrl: 'https://image.tmdb.org/t/p/',
-                width: 'w342',
-                imageUrl: item.poster_path
-            }; 
+                baseUrl: "https://image.tmdb.org/t/p/",
+                width: "w342",
+                imageUrl: item.poster_path,
+            };
             var poster = posterPath.baseUrl + posterPath.width + posterPath.imageUrl;
         } else {
-            poster = 'assets/img/no-poster.png';
+            poster = "assets/img/no-poster.png";
         }
 
         var context = {
             title: title,
-            'original-title': originalTitle,
+            "original-title": originalTitle,
             language: languageFlag(item.original_language),
             rating: stars(item.vote_average),
             type: type,
             poster: poster,
-            overview: item.overview.substr(0, 200)
+            overview: item.overview.substr(0, 200),
         };
 
         var output = template(context);
         container.append(output);
-    } 
-};
+    }
+}
 
 // pulizia dati ricerche precedenti
 function cleanUp(container) {
-    container.html('');
-};
+    container.html("");
+}
 
 // trasforma la media voti in stelle da 1 a 5
 function stars(vote) {
-    var res = '';
+    var res = "";
     var fullStar = '<i class="fas fa-star"></i>';
     var emptyStar = '<i class="far fa-star"></i>';
 
     switch (Math.ceil(vote / 2)) {
         case 1:
-            res = fullStar + (emptyStar.repeat(4));
+            res = fullStar + emptyStar.repeat(4);
             break;
         case 2:
-            res = (fullStar.repeat(2)) + (emptyStar.repeat(3));
+            res = fullStar.repeat(2) + emptyStar.repeat(3);
             break;
         case 3:
-            res = (fullStar.repeat(3)) + (emptyStar.repeat(2));
+            res = fullStar.repeat(3) + emptyStar.repeat(2);
             break;
         case 4:
-            res = (fullStar.repeat(4)) + emptyStar;
+            res = fullStar.repeat(4) + emptyStar;
             break;
         case 5:
             res = fullStar.repeat(5);
@@ -182,30 +174,24 @@ function stars(vote) {
         default:
             res = emptyStar.repeat(5);
             break;
-    };
+    }
     return res;
-};
+}
 
 // cambio lingua in bandiera (it - en)
 function languageFlag(language) {
-    var res = '';
+    var res = "";
     switch (language) {
-        case 'it':
+        case "it":
             res = '<img class="flag" src="assets/img/it.svg" alt="IT">';
             break;
-        case 'en':
+        case "en":
             res = '<img class="flag" src="assets/img/en.svg" alt="EN">';
             break;
         default:
             res = language;
             break;
-    };
+    }
     return res;
-};
-
-function searchMoviesTV(container, searchWord, apiDataMovies, apiDataTv, template, inputBar) {
-    var searchWord = inputBar.val().trim();
-    cleanUp(container);
-    apiRequest(searchWord, apiDataMovies, template, container, inputBar);
-    apiRequest(searchWord, apiDataTv, template, container, inputBar);
 }
+
